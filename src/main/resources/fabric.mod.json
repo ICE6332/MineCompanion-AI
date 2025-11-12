@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "aicompanion",
+  "version": "${version}",
+  "name": "AI Companion Mod",
+  "description": "An intelligent AI companion that naturally interacts with players in Minecraft",
+  "authors": ["Momentie_Emiya"],
+  "contact": {
+    "homepage": "https://github.com/your-username/ai-companion-mod",
+    "sources": "https://github.com/your-username/ai-companion-mod"
+  },
+  "license": "MIT",
+  "icon": "assets/aicompanion/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["com.aicompanion.AICompanionMod"],
+    "client": ["com.aicompanion.client.AICompanionModClient"]
+  },
+  "mixins": ["aicompanion.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.17.0",
+    "minecraft": "~1.21.10",
+    "java": ">=21",
+    "fabric-api": "*",
+    "carpet": ">=1.4.188"
+  },
+  "suggests": {
+    "another-mod": "*"
+  }
+}

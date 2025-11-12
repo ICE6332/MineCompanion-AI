@@ -1,0 +1,53 @@
+# Gradle
+.gradle/
+build/
+out/
+classes/
+bin/
+
+# Eclipse
+*.launch
+.settings/
+.metadata
+.classpath
+.project
+.factorypath
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# VS Code
+.vscode/
+
+# Fabric
+run/
+logs/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Minecraft
+.mixin.out/
+remappedSrc/
+
+# Loom
+.gradle/loom-cache/
+
+# Java
+*.class
+*.log
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~.nib
