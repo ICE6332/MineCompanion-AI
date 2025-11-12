@@ -1,4 +1,4 @@
-package com.aicompanion.player;
+﻿package com.aicompanion.player;
 
 import carpet.patches.EntityPlayerMPFake;
 import com.aicompanion.controller.MovementController;
@@ -80,7 +80,8 @@ public class AIPlayerController {
         if (fakePlayer != null && !fakePlayer.isRemoved()) {
             // 使用 Carpet Mod 的 kill() 方法正确断开 FakePlayer 连接
             // 这会触发 onDisconnect() 并从玩家列表中移除
-            fakePlayer.kill(net.minecraft.text.Text.literal("AI Companion removed"));
+            fakePlayer.kill(net.minecraft.text.Text.literal("MineCompanion BOT removed"));
         }
     }
 }
+

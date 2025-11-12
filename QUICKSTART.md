@@ -1,4 +1,4 @@
-# 快速开始指南
+﻿# 快速开始指南
 
 ## 📋 当前状态
 
@@ -66,16 +66,16 @@ gradlew.bat runClient
 启动游戏后，在日志中查找：
 ```
 [aicompanion/AICompanionMod] ========================================
-[aicompanion/AICompanionMod] AI Companion Mod is initializing...
+[aicompanion/AICompanionMod] MineCompanion-BOT is initializing...
 [aicompanion/AICompanionMod] Version: 0.1.0
 [aicompanion/AICompanionMod] ========================================
-[aicompanion/AICompanionMod] AI Companion Mod initialized successfully!
+[aicompanion/AICompanionMod] MineCompanion-BOT initialized successfully!
 ```
 
 或者在游戏中：
 1. 进入主菜单
 2. 点击 "Mods" 按钮
-3. 查找 "AI Companion Mod"
+3. 查找 "MineCompanion-BOT"
 
 ## 📝 重要提醒
 
@@ -163,3 +163,4 @@ java -version
 - 查看 [README.md](README.md) 获取更多信息
 - 查看 [开发路线图](../Project/docs/05-开发路线图.md) 了解下一步
 - 参考 [Fabric 模组实现文档](../Project/docs/02-Fabric模组实现.md) 查看代码示例
+

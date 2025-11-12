@@ -9,4 +9,4 @@ pluginManagement {
     }
 }
 
-rootProject.name = 'ai-companion-mod'
+rootProject.name = 'minecompanion-bot'

@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "id": "aicompanion",
   "version": "${version}",
-  "name": "AI Companion Mod",
-  "description": "An intelligent AI companion that naturally interacts with players in Minecraft",
+  "name": "MineCompanion-BOT",
+  "description": "An AI-driven FakePlayer bot companion controlled by external services",
   "authors": ["Momentie_Emiya"],
   "contact": {
     "homepage": "https://github.com/your-username/ai-companion-mod",

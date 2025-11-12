@@ -1,4 +1,4 @@
-﻿# AI Companion Mod - Fabric 妯＄粍
+﻿# MineCompanion-BOT - Fabric 妯＄粍
 
 涓€涓熀浜?Fabric 鐨?Minecraft AI 闄即妯＄粍锛屼娇鐢?FakePlayer 鎶€鏈 AI 浼欎即鑳藉鍍忕湡瀹炵帺瀹朵竴鏍烽櫔浼翠綘娓告垙銆?
 ## 椤圭洰鐘舵€?
@@ -110,12 +110,12 @@ cd ai-companion-mod
 gradlew.bat build
 ```
 
-缂栬瘧鎴愬姛鍚庯紝鍦?`build/libs/` 鐩綍鎵惧埌锛?- `ai-companion-mod-0.3.0.jar` - 涓?Mod 鏂囦欢
+缂栬瘧鎴愬姛鍚庯紝鍦?`build/libs/` 鐩綍鎵惧埌锛?- `minecompanion-bot-0.3.0.jar` - 涓?Mod 鏂囦欢
 
 ### 瀹夎浣跨敤
 
 1. 纭繚瀹夎浜?Fabric Loader 鍜?Fabric API
-2. 灏?`ai-companion-mod-0.3.0.jar` 鏀惧叆 `.minecraft/mods/` 鐩綍
+2. 灏?`minecompanion-bot-0.3.0.jar` 鏀惧叆 `.minecraft/mods/` 鐩綍
 3. 鍚姩娓告垙锛岃繘鍏ュ崟浜轰笘鐣屾垨鏈嶅姟鍣?4. 锛堝彲閫夛級淇敼閰嶇疆鏂囦欢 `.minecraft/config/ai-companion.json` 浠ュ惎鐢?WebSocket 鍔熻兘
 
 ## 浣跨敤鎸囧崡
@@ -308,3 +308,5 @@ gradlew.bat clean build
 **寮€鍙戠姸鎬?*: 馃煝 娲昏穬寮€鍙戜腑
 
 **鏈€鍚庢洿鏂?*: 2025-01-13
+
+

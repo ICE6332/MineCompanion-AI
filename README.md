@@ -1,8 +1,8 @@
 ﻿# MineCompanion-BOT
 
-> 基于 LLM 控制的定制BOT MOD 
+> 基于 LLM 控制的 AI 驱动 BOT 模组，让它像真实玩家一样陪你探索 Minecraft。
 
-MineCompanion-BOT 是一款基于 Fabric 的 Minecraft 模组，利用 FakePlayer 技术与本地 AI 服务进行通讯，让AI可以驱动BOT并进行交互。
+MineCompanion-BOT 是一款基于 Fabric 的 Minecraft 模组，利用 FakePlayer 技术与本地 AI 服务进行通讯，让 AI 可以驱动 BOT 并进行自然交互，且无需复杂配置即可召唤能够跟随、对话、执行简单任务的智能伙伴。
 
 ## ✨ 功能亮点
 - **真实陪伴体验**：AI 以 FakePlayer 身份加入游戏世界，拥有原版玩家的全部交互能力。
@@ -19,7 +19,7 @@ MineCompanion-BOT 是一款基于 Fabric 的 Minecraft 模组，利用 FakePlaye
 
 ## ⚡ 快速开始
 1. **下载模组**
-   - 从 Releases 或构建产物中获取 `MineCompanion-BOT.jar`，放入 `.minecraft/mods/`。
+   - 在 Releases 或构建产物中获取 `MineCompanion-BOT-x.y.z.jar`（版本号以发布为准），放入 `.minecraft/mods/`。
 2. **准备依赖**
    - 确保 Fabric Loader、Fabric API、Carpet Mod 已安装到同一实例。
 3. **启动游戏**
@@ -74,4 +74,5 @@ MineCompanion-BOT 是一款基于 Fabric 的 Minecraft 模组，利用 FakePlaye
 - 开发者指南与旧版 README 已迁移至 `docs/README-dev.md`
 - 架构、API、路线图等文档见 `/docs` 目录下的其它文件
 
-让 MineCompanion-AI 成为你旅途中的最佳伙伴吧！
+让 MineCompanion-BOT 成为你旅途中的最佳伙伴吧！
+

@@ -1,4 +1,4 @@
-package com.aicompanion.config;
+﻿package com.aicompanion.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -13,7 +13,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 /**
- * AI Companion Mod 配置管理器
+ * MineCompanion-BOT 配置管理器
  * 单例模式，负责加载、保存和提供配置参数
  */
 public class AICompanionConfig {
@@ -61,7 +61,7 @@ public class AICompanionConfig {
             try (FileReader reader = new FileReader(configFile)) {
                 JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
                 parseConfig(json);
-                LOGGER.info("AI Companion config loaded from: " + configFile.getAbsolutePath());
+                LOGGER.info("MineCompanion-BOT config loaded from: " + configFile.getAbsolutePath());
             } catch (Exception e) {
                 LOGGER.error("Failed to load config, using defaults", e);
                 saveDefaults();
@@ -184,3 +184,4 @@ public class AICompanionConfig {
         this.debugMode = debugMode;
     }
 }
+

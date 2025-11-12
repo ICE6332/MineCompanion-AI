@@ -1,4 +1,4 @@
-package com.aicompanion;
+﻿package com.aicompanion;
 
 import carpet.patches.EntityPlayerMPFake;
 import com.aicompanion.command.AICompanionCommand;
@@ -17,7 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * AI Companion Mod - Main Entry Point
+ * MineCompanion-BOT - Main Entry Point
  *
  * Phase 2: FakePlayer-based AI companions with Carpet Mod integration
  *
@@ -54,7 +54,7 @@ public class AICompanionMod implements ModInitializer {
     @Override
     public void onInitialize() {
         LOGGER.info("========================================");
-        LOGGER.info("AI Companion Mod is initializing...");
+        LOGGER.info("MineCompanion-BOT is initializing...");
         LOGGER.info("Version: 0.3.0 (WebSocket + State Collection)");
         LOGGER.info("========================================");
 
@@ -143,7 +143,7 @@ public class AICompanionMod implements ModInitializer {
         LOGGER.info("Registered mod commands");
 
         LOGGER.info("========================================");
-        LOGGER.info("AI Companion Mod initialized successfully!");
+        LOGGER.info("MineCompanion-BOT initialized successfully!");
         LOGGER.info("Features:");
         LOGGER.info("  - FakePlayer AI companions");
         LOGGER.info("  - WebSocket communication: " + (AICompanionConfig.getInstance().isWebSocketEnabled() ? "ENABLED" : "DISABLED"));
@@ -151,3 +151,4 @@ public class AICompanionMod implements ModInitializer {
         LOGGER.info("========================================");
     }
 }
+

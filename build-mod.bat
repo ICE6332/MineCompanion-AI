@@ -1,6 +1,6 @@
-@echo off
+﻿@echo off
 echo ========================================
-echo AI Companion Mod - 构建脚本
+echo MineCompanion-BOT - 构建脚本
 echo ========================================
 echo.
 
@@ -59,14 +59,14 @@ if errorlevel 1 (
 )
 echo.
 echo ✅ 编译完成！
-echo 输出文件: build\libs\ai-companion-mod-0.1.0.jar
+echo 输出文件: build\libs\minecompanion-bot-0.3.0.jar
 pause
 exit /b 0
 
 :run
 echo.
 echo [1/1] 正在启动 Minecraft 客户端...
-echo 请在游戏日志中查找 "AI Companion Mod" 相关信息
+echo 请在游戏日志中查找 "MineCompanion-BOT" 相关信息
 call gradlew.bat runClient
 pause
 exit /b 0
@@ -115,7 +115,7 @@ echo.
 echo ========================================
 echo ✅ 完整构建成功！
 echo ========================================
-echo 输出文件: build\libs\ai-companion-mod-0.1.0.jar
+echo 输出文件: build\libs\minecompanion-bot-0.3.0.jar
 echo.
 pause
 exit /b 0
@@ -125,3 +125,4 @@ echo.
 echo ❌ 无效的选项！
 pause
 goto menu
+
