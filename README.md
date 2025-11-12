@@ -1,8 +1,8 @@
-﻿# MineCompanion-AI
+﻿# MineCompanion-BOT
 
-> 让 AI 伙伴像真实玩家一样陪伴你探索 Minecraft。
+> 基于 LLM 控制的定制BOT MOD 
 
-MineCompanion-AI 是一款基于 Fabric 的 Minecraft 模组，利用 FakePlayer 技术与本地 AI 服务实现实时互动。无需复杂配置，即可召唤一个能够跟随、对话、执行简单任务的智能伙伴。
+MineCompanion-BOT 是一款基于 Fabric 的 Minecraft 模组，利用 FakePlayer 技术与本地 AI 服务进行通讯，让AI可以驱动BOT并进行交互。
 
 ## ✨ 功能亮点
 - **真实陪伴体验**：AI 以 FakePlayer 身份加入游戏世界，拥有原版玩家的全部交互能力。
@@ -19,15 +19,16 @@ MineCompanion-AI 是一款基于 Fabric 的 Minecraft 模组，利用 FakePlayer
 
 ## ⚡ 快速开始
 1. **下载模组**
-   - 从 Releases 或构建产物中获取 `MineCompanion-AI-x.y.z.jar`，放入 `.minecraft/mods/`。
+   - 从 Releases 或构建产物中获取 `MineCompanion-BOT.jar`，放入 `.minecraft/mods/`。
 2. **准备依赖**
    - 确保 Fabric Loader、Fabric API、Carpet Mod 已安装到同一实例。
 3. **启动游戏**
    - 第一次运行会在 `.minecraft/config/ai-companion.json` 生成配置文件。
-4. **启动 AI 服务（可选）**
-   - 运行官方 FastAPI 示例或你自己的服务，确保 WebSocket 地址与配置保持一致。
-5. **召唤 AI 伙伴**
-   - 进入单人或服务器世界，执行 `/aic summon` 即可创建 AI 伙伴。
+4. **启动 AI 服务**
+   - 运行MineCompanion-BOT 或你自己的服务，确保 WebSocket 地址与配置保持一致。
+   - 默认端口为localhost:8080。
+5. **召唤 AI BOT**
+   - 进入单人或服务器世界，执行 `/aicompanion spawn <AI-name>` 即可创建 AI 伙伴。
 
 ## 🛠 配置说明
 配置文件位于 `.minecraft/config/ai-companion.json`，主要字段：
@@ -45,12 +46,12 @@ MineCompanion-AI 是一款基于 Fabric 的 Minecraft 模组，利用 FakePlayer
 ## 🎮 游戏内指令速览
 | 指令 | 功能 |
 | --- | --- |
-| `/aic summon` | 召唤或刷新 AI 伙伴 |
-| `/aic follow <player>` | 指定跟随目标玩家 |
-| `/aic stay` | 切换驻留/跟随模式 |
-| `/aic look <target>` | 让 AI 盯住玩家或坐标 |
-| `/aic status` | 查看 WebSocket 连接与 AI 状态 |
-| `/aic reload` | 重新加载配置 |
+| `/aicompanion spawn <AI-name>` | 召唤或刷新 AI 伙伴 |
+| `/aicompanion follow <AI-name> <player>` | 指定跟随目标玩家 |
+| `/aicompanion stop` | 停止AI行为 |
+| `/aicompanion look <AI-name>` | 让 AI 盯住玩家或坐标 |
+| `/aicompanion list` | 查看  AI-bot 列表 |
+| `/aicompanion kill <AI-name>` | 移除 AI-bot |
 
 > 更多开发者指令、行为脚本示例见 `docs/README-dev.md`。
 
