@@ -1,4 +1,4 @@
-﻿package com.aicompanion;
+package com.aicompanion;
 
 import carpet.patches.EntityPlayerMPFake;
 import com.aicompanion.command.AICompanionCommand;

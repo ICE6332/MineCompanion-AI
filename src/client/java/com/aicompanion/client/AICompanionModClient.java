@@ -1,4 +1,4 @@
-﻿package com.aicompanion.client;
+package com.aicompanion.client;
 
 import com.aicompanion.AICompanionMod;
 import net.fabricmc.api.ClientModInitializer;
