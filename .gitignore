@@ -52,6 +52,7 @@ remappedSrc/
 *.swp
 *~.nib
 
-# Claude Code
+# Claude / Agent config
 CLAUDE.md
 .claude/
+AGENTS.md

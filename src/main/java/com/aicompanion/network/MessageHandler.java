@@ -175,6 +175,54 @@ public class MessageHandler {
                 }
                 break;
 
+            case "place_block":
+                if (data.has("position")) {
+                    JsonObject posObj = data.getAsJsonObject("position");
+                    int x = posObj.get("x").getAsInt();
+                    int y = posObj.get("y").getAsInt();
+                    int z = posObj.get("z").getAsInt();
+                    BlockPos pos = new BlockPos(x, y, z);
+
+                    controller.getInteractionController().placeBlock(pos);
+                    LOGGER.info(
+                        "{} placing block at ({}, {}, {})",
+                        companionName,
+                        x,
+                        y,
+                        z
+                    );
+                } else {
+                    LOGGER.warn("place_block action missing 'position' field");
+                }
+                break;
+
+            case "use_item":
+                // 骨架版本：默认在空中使用当前物品
+                controller.getInteractionController().useItemInAir();
+                LOGGER.info("{} using item in air", companionName);
+                break;
+
+            case "attack_entity":
+                // 骨架版本：通过玩家名作为攻击目标
+                if (data.has("targetPlayer")) {
+                    String targetName = data.get("targetPlayer").getAsString();
+                    ServerPlayerEntity target =
+                        server.getPlayerManager().getPlayer(targetName);
+                    if (target != null) {
+                        controller.getCombatController().setTarget(target);
+                        LOGGER.info(
+                            "{} targeting player {} for attack",
+                            companionName,
+                            targetName
+                        );
+                    } else {
+                        LOGGER.warn("attack_entity target player not found: {}", targetName);
+                    }
+                } else {
+                    LOGGER.warn("attack_entity action missing 'targetPlayer' field");
+                }
+                break;
+
             default:
                 LOGGER.warn("Unknown action: " + action);
         }

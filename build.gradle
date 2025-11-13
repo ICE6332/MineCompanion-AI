@@ -77,8 +77,12 @@ java {
 }
 
 jar {
+	// Precompute archive base name at configuration time to be
+	// compatible with Gradle configuration cache / future Gradle versions.
+	def archiveBaseName = base.archivesName.get()
+
 	from("LICENSE") {
-		rename { "${it}_${project.base.archivesName.get()}"}
+		rename { fileName -> "${fileName}_${archiveBaseName}" }
 	}
 }
 

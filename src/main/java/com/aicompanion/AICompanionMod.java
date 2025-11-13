@@ -55,7 +55,7 @@ public class AICompanionMod implements ModInitializer {
     public void onInitialize() {
         LOGGER.info("========================================");
         LOGGER.info("MineCompanion-BOT is initializing...");
-        LOGGER.info("Version: 0.3.0 (WebSocket + State Collection)");
+        LOGGER.info("Version: 0.3.2-alpha (Interaction + Combat)");
         LOGGER.info("========================================");
 
         // Check if Carpet Mod is loaded
