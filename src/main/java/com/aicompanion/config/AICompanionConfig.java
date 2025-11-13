@@ -1,4 +1,4 @@
-﻿package com.aicompanion.config;
+package com.aicompanion.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

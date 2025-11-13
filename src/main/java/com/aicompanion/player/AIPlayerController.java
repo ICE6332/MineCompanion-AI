@@ -1,6 +1,7 @@
-﻿package com.aicompanion.player;
+package com.aicompanion.player;
 
 import carpet.patches.EntityPlayerMPFake;
+import com.aicompanion.controller.InteractionController;
 import com.aicompanion.controller.MovementController;
 import com.aicompanion.controller.ViewController;
 
@@ -14,6 +15,7 @@ public class AIPlayerController {
     private final EntityPlayerMPFake fakePlayer;
     private final MovementController movementController;
     private final ViewController viewController;
+    private final InteractionController interactionController;
 
     /**
      * 构造函数
@@ -24,6 +26,7 @@ public class AIPlayerController {
         this.fakePlayer = fakePlayer;
         this.movementController = new MovementController(fakePlayer);
         this.viewController = new ViewController(fakePlayer);
+        this.interactionController = new InteractionController(fakePlayer);
     }
 
     /**
@@ -53,6 +56,10 @@ public class AIPlayerController {
         return viewController;
     }
 
+    public InteractionController getInteractionController() {
+        return interactionController;
+    }
+
     /**
      * 获取 AI 玩家的名称
      *
@@ -71,6 +78,9 @@ public class AIPlayerController {
 
         // 更新视角控制器（看向逻辑）
         viewController.updateLook();
+
+        // 更新交互控制器（预留扩展点）
+        interactionController.tick();
     }
 
     /**
@@ -84,4 +94,3 @@ public class AIPlayerController {
         }
     }
 }
-

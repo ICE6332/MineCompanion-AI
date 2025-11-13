@@ -8,6 +8,7 @@ import com.google.gson.JsonParser;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.BlockPos;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -127,8 +128,51 @@ public class MessageHandler {
                 break;
 
             case "move_to":
-                // 未来扩展：移动到指定坐标
-                LOGGER.warn("move_to action not yet implemented");
+                if (data.has("position")) {
+                    JsonObject posObj = data.getAsJsonObject("position");
+                    double x = posObj.get("x").getAsDouble();
+                    double y = posObj.get("y").getAsDouble();
+                    double z = posObj.get("z").getAsDouble();
+
+                    controller
+                        .getMovementController()
+                        .moveTo(new net.minecraft.util.math.Vec3d(x, y, z));
+                    LOGGER.info(
+                        "{} moving to position ({}, {}, {})",
+                        companionName,
+                        x,
+                        y,
+                        z
+                    );
+                } else {
+                    LOGGER.warn("move_to action missing 'position' field");
+                }
+                break;
+
+            case "jump":
+                controller.getMovementController().jump();
+                LOGGER.info("{} jumping", companionName);
+                break;
+
+            case "mine_block":
+                if (data.has("position")) {
+                    JsonObject posObj = data.getAsJsonObject("position");
+                    int x = posObj.get("x").getAsInt();
+                    int y = posObj.get("y").getAsInt();
+                    int z = posObj.get("z").getAsInt();
+                    BlockPos pos = new BlockPos(x, y, z);
+
+                    controller.getInteractionController().mineBlock(pos);
+                    LOGGER.info(
+                        "{} mining block at ({}, {}, {})",
+                        companionName,
+                        x,
+                        y,
+                        z
+                    );
+                } else {
+                    LOGGER.warn("mine_block action missing 'position' field");
+                }
                 break;
 
             default:

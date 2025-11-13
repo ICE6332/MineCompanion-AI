@@ -122,6 +122,13 @@ public class MovementController {
     }
 
     /**
+     * 让 FakePlayer 跳跃。
+     */
+    public void jump() {
+        player.jump();
+    }
+
+    /**
      * 更新跟随逻辑（每 Tick 调用）
      */
     public void updateFollow() {
