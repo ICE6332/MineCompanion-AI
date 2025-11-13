@@ -1,14 +1,16 @@
 package com.aicompanion.player;
 
 import carpet.patches.EntityPlayerMPFake;
+import com.aicompanion.controller.CombatController;
 import com.aicompanion.controller.InteractionController;
+import com.aicompanion.controller.InventoryController;
 import com.aicompanion.controller.MovementController;
 import com.aicompanion.controller.ViewController;
 
 /**
  * AI 玩家控制器
  *
- * 封装 FakePlayer 并提供控制接口
+ * 封装 FakePlayer 并提供控制接口。
  */
 public class AIPlayerController {
 
@@ -16,6 +18,8 @@ public class AIPlayerController {
     private final MovementController movementController;
     private final ViewController viewController;
     private final InteractionController interactionController;
+    private final InventoryController inventoryController;
+    private final CombatController combatController;
 
     /**
      * 构造函数
@@ -27,50 +31,61 @@ public class AIPlayerController {
         this.movementController = new MovementController(fakePlayer);
         this.viewController = new ViewController(fakePlayer);
         this.interactionController = new InteractionController(fakePlayer);
+        this.inventoryController = new InventoryController(fakePlayer);
+        this.combatController = new CombatController(fakePlayer);
     }
 
     /**
-     * 获取底层的 FakePlayer 实例
-     *
-     * @return EntityPlayerMPFake 实例
+     * 获取底层 FakePlayer 实例。
      */
     public EntityPlayerMPFake getFakePlayer() {
         return fakePlayer;
     }
 
     /**
-     * 获取移动控制器
-     *
-     * @return MovementController 实例
+     * 获取移动控制器。
      */
     public MovementController getMovementController() {
         return movementController;
     }
 
     /**
-     * 获取视角控制器
-     *
-     * @return ViewController 实例
+     * 获取视角控制器。
      */
     public ViewController getViewController() {
         return viewController;
     }
 
+    /**
+     * 获取交互控制器。
+     */
     public InteractionController getInteractionController() {
         return interactionController;
     }
 
     /**
-     * 获取 AI 玩家的名称
-     *
-     * @return 名称字符串
+     * 获取背包控制器。
+     */
+    public InventoryController getInventoryController() {
+        return inventoryController;
+    }
+
+    /**
+     * 获取战斗控制器。
+     */
+    public CombatController getCombatController() {
+        return combatController;
+    }
+
+    /**
+     * 获取 AI 玩家的名称。
      */
     public String getName() {
         return fakePlayer.getName().getString();
     }
 
     /**
-     * 每 Tick 更新
+     * 每 Tick 更新。
      */
     public void tick() {
         // 更新移动控制器（跟随逻辑）
@@ -81,16 +96,18 @@ public class AIPlayerController {
 
         // 更新交互控制器（预留扩展点）
         interactionController.tick();
+
+        // 更新战斗控制器（预留扩展点）
+        combatController.tick();
     }
 
     /**
-     * 清理资源，移除 FakePlayer
+     * 清理资源，移除 FakePlayer。
      */
     public void cleanup() {
         if (fakePlayer != null && !fakePlayer.isRemoved()) {
-            // 使用 Carpet Mod 的 kill() 方法正确断开 FakePlayer 连接
-            // 这会触发 onDisconnect() 并从玩家列表中移除
             fakePlayer.kill(net.minecraft.text.Text.literal("MineCompanion BOT removed"));
         }
     }
 }
+
