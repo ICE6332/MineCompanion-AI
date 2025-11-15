@@ -68,6 +68,12 @@ public class ConnectionManager {
             return;
         }
 
+        // 确保通知管理器已初始化
+        if (NotificationManager.getInstance().getServer() == null) {
+            LOGGER.warn("NotificationManager not initialized, skipping connection");
+            return;
+        }
+
         AICompanionConfig config = AICompanionConfig.getInstance();
         String url = config.getServerUrl();
 

@@ -31,6 +31,13 @@ public class NotificationManager {
     }
 
     /**
+     * 获取服务器实例
+     */
+    public MinecraftServer getServer() {
+        return server;
+    }
+
+    /**
      * 发送连接成功消息
      */
     public void sendConnectionSuccess() {
