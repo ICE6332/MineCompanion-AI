@@ -57,8 +57,16 @@ public class MessageHandler {
                             case "config_sync":
                                 handleConfigSync(json.getAsJsonObject("data"));
                                 break;
+                            case "connection_ack":
                             case "connection_accept":
                                 LOGGER.info("Connection accepted by AI Service");
+                                NotificationManager.getInstance().sendConnectionSuccess();
+                                break;
+                            case "game_state_ack":
+                                LOGGER.debug("Game state acknowledged by AI Service");
+                                break;
+                            case "conversation_response":
+                                LOGGER.debug("Conversation response received from AI Service");
                                 break;
                             case "error_notification":
                                 handleError(json.getAsJsonObject("data"));
