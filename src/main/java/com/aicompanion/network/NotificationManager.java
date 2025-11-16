@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -15,7 +16,7 @@ public class NotificationManager {
     private static final Logger LOGGER = LoggerFactory.getLogger("NotificationManager");
     private static NotificationManager instance;
     private MinecraftServer server;
-    private final List<Text> pendingMessages = new ArrayList<>();
+    private final List<Text> pendingMessages = Collections.synchronizedList(new ArrayList<>());
 
     private NotificationManager() {
     }
@@ -105,8 +106,10 @@ public class NotificationManager {
         if (server == null) return;
         if (pendingMessages.isEmpty()) return;
 
-        pendingMessages.forEach(msg -> server.getPlayerManager().broadcast(msg, false));
-        pendingMessages.clear();
+        synchronized (pendingMessages) {
+            pendingMessages.forEach(msg -> server.getPlayerManager().broadcast(msg, false));
+            pendingMessages.clear();
+        }
     }
 
     /**
