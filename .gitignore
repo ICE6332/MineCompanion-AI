@@ -51,6 +51,7 @@ remappedSrc/
 *.bak
 *.swp
 *~.nib
+nul
 
 # Claude / Agent config
 CLAUDE.md

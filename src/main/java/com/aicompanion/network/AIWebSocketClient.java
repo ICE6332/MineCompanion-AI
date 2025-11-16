@@ -36,6 +36,9 @@ public class AIWebSocketClient extends WebSocketClient {
         LOGGER.info("WebSocket connected to: " + getURI());
         reconnectAttempts.set(0);
 
+        // 游戏内提示连接成功（即便后端还会再回 connection_ack，也提前告知玩家）
+        NotificationManager.getInstance().sendConnectionSuccess();
+
         // 发送连接初始化消息
         sendConnectionInit();
     }
