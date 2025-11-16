@@ -47,12 +47,21 @@ public class MessageHandler {
             if (server != null) {
                 server.execute(() -> {
                     try {
+                        // 调试：每条消息先在聊天里提示类型，便于确认链路
+                        server.getPlayerManager().broadcast(
+                            Text.literal("[AI WS] 收到消息类型: " + type),
+                            false
+                        );
+
                         switch (type) {
                             case "action_command":
                                 handleActionCommand(json.getAsJsonObject("data"));
                                 break;
                             case "conversation_message":
                                 handleConversation(json.getAsJsonObject("data"));
+                                break;
+                            case "conversation_response":
+                                handleConversationResponse(json.getAsJsonObject("data"));
                                 break;
                             case "config_sync":
                                 handleConfigSync(json.getAsJsonObject("data"));
@@ -64,9 +73,6 @@ public class MessageHandler {
                                 break;
                             case "game_state_ack":
                                 LOGGER.debug("Game state acknowledged by AI Service");
-                                break;
-                            case "conversation_response":
-                                LOGGER.debug("Conversation response received from AI Service");
                                 break;
                             case "error_notification":
                                 handleError(json.getAsJsonObject("data"));
@@ -237,6 +243,38 @@ public class MessageHandler {
     }
 
     /**
+     * 处理对话响应（新协议）
+     * 优先兼容文档中的 conversation_response 结构：
+     * {
+     *   "type": "conversation_response",
+     *   "data": {
+     *     "ai": "AICompanion",
+     *     "message": "内容"
+     *   }
+     * }
+     * 同时兼容旧的 conversation_message 结构：
+     * {
+     *   "companionName": "...",
+     *   "text": "..."
+     * }
+     */
+    private void handleConversationResponse(JsonObject data) {
+        JsonObject normalized = new JsonObject();
+
+        if (data.has("companionName") && data.has("text")) {
+            normalized = data;
+        } else if (data.has("ai") && data.has("message")) {
+            normalized.addProperty("companionName", data.get("ai").getAsString());
+            normalized.addProperty("text", data.get("message").getAsString());
+        } else {
+            LOGGER.warn("conversation_response missing required fields");
+            return;
+        }
+
+        handleConversation(normalized);
+    }
+
+    /**
      * 处理对话消息
      */
     private void handleConversation(JsonObject data) {
@@ -248,13 +286,12 @@ public class MessageHandler {
         String companionName = data.get("companionName").getAsString();
         String text = data.get("text").getAsString();
 
-        AIPlayerController controller = AIFakePlayerManager.getPlayerByName(companionName);
-        if (controller == null) {
-            LOGGER.warn("AI companion not found: " + companionName);
+        // 即便对应的 AI 未注册，也允许发送聊天，便于联调
+        if (server == null) {
+            LOGGER.warn("Server is null, cannot broadcast conversation.");
             return;
         }
 
-        // 让 AI 在聊天中发送消息
         server.getPlayerManager().broadcast(
             Text.literal("<" + companionName + "> " + text),
             false

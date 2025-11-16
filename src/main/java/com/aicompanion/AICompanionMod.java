@@ -119,6 +119,14 @@ public class AICompanionMod implements ModInitializer {
                 // Try to register this FakePlayer if it's pending
                 AIFakePlayerManager.tryRegisterFromJoin(fakePlayer, server);
             }
+
+            // Flush any pending notifications (e.g., connection success when no player online)
+            NotificationManager.getInstance().flushPendingMessages();
+
+            // 如果此时已经连接上后端，但之前玩家不在线导致未提示，则在玩家加入时补发
+            if (ConnectionManager.getInstance().isConnected()) {
+                NotificationManager.getInstance().sendConnectionSuccess();
+            }
         });
         LOGGER.info("Registered FakePlayer join event handler");
 

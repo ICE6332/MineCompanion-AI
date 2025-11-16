@@ -35,7 +35,7 @@ MineCompanion-BOT 是一款基于 Fabric 的 Minecraft 模组，利用 FakePlaye
 
 | 字段 | 说明 | 默认值 |
 | --- | --- | --- |
-| `websocketEnabled` | 是否启用与 AI 服务的实时通信 | `false` |
+| `websocketEnabled` | 是否启用与 AI 服务的实时通信 | `true` |
 | `serverUrl` | WebSocket 服务地址（如 `ws://127.0.0.1:8000/ws`） | `""` |
 | `stateUpdateIntervalTicks` | 状态同步周期（游戏 Tick） | `20` |
 | `collectEnvironment` | 是否发送天气、生物群系等环境信息 | `true` |
