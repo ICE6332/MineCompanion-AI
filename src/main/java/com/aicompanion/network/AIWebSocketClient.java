@@ -86,7 +86,7 @@ public class AIWebSocketClient extends WebSocketClient {
     private void sendConnectionInit() {
         String initMessage = "{\"type\":\"connection_init\",\"timestamp\":" +
             (System.currentTimeMillis() / 1000) +
-            ",\"data\":{\"client\":\"minecraft_mod\",\"version\":\"0.3.2-alpha.3\"}}";
+            ",\"data\":{\"client\":\"minecraft_mod\",\"version\":\"0.4.0-alpha.1\"}}";
         send(initMessage);
     }
 

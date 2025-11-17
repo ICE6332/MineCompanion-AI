@@ -5,6 +5,7 @@ import com.aicompanion.network.protocol.Message;
 import com.aicompanion.player.AIFakePlayerManager;
 import com.aicompanion.state.GameStateData;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import net.minecraft.server.MinecraftServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -143,9 +144,39 @@ public class ConnectionManager {
     }
 
     /**
+     * 发送事件通知（紧凑JSON对象）
+     */
+    public void sendEvent(String eventType, JsonObject compactData) {
+        if (client == null || !client.isOpen()) {
+            return;
+        }
+
+        try {
+            // 紧凑消息不包装在Message中，直接发送
+            String json = gson.toJson(compactData);
+            client.send(json);
+
+            if (AICompanionConfig.getInstance().isDebugMode()) {
+                LOGGER.debug("Sent compact message: " + json);
+            }
+        } catch (Exception e) {
+            LOGGER.error("Failed to send compact event: " + eventType, e);
+        }
+    }
+
+    /**
      * 检查是否已连接
      */
     public boolean isConnected() {
         return client != null && client.isOpen();
+    }
+
+    /**
+     * 获取当前 WebSocket 客户端实例。
+     *
+     * @return 已连接的 {@link AIWebSocketClient}，或 {@code null} 表示未建立连接
+     */
+    public AIWebSocketClient getClient() {
+        return client;
     }
 }

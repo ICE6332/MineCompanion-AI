@@ -55,7 +55,12 @@ public class MessageHandler {
                                 handleConversation(json.getAsJsonObject("data"));
                                 break;
                             case "conversation_response":
-                                handleConversationResponse(json.getAsJsonObject("data"));
+                                // 支持两种格式：带data包裹的旧版，以及扁平的新版
+                                if (json.has("data")) {
+                                    handleConversationResponse(json.getAsJsonObject("data"));
+                                } else {
+                                    handleConversationResponse(json);
+                                }
                                 break;
                             case "config_sync":
                                 handleConfigSync(json.getAsJsonObject("data"));
@@ -254,18 +259,203 @@ public class MessageHandler {
      */
     private void handleConversationResponse(JsonObject data) {
         JsonObject normalized = new JsonObject();
+        // 兼容 action / a 字段的动作列表
+        if (data.has("action") && data.get("action").isJsonArray()) {
+            processActions(data.getAsJsonArray("action"));
+        } else if (data.has("a") && data.get("a").isJsonArray()) {
+            processActions(data.getAsJsonArray("a"));
+        }
 
-        if (data.has("companionName") && data.has("text")) {
-            normalized = data;
+        // 紧凑格式：c（companion），m（message）
+        if (data.has("c") && data.has("m")) {
+            normalized.addProperty("companionName", data.get("c").getAsString());
+            normalized.addProperty("text", data.get("m").getAsString());
+            LOGGER.debug("Parsed compact conversation_response");
+        } else if (data.has("companionName") && data.has("message")) {
+            // 新版标准格式（扁平结构）
+            normalized.addProperty("companionName", data.get("companionName").getAsString());
+            normalized.addProperty("text", data.get("message").getAsString());
+            LOGGER.debug("Parsed standard conversation_response (new format)");
         } else if (data.has("ai") && data.has("message")) {
+            // 旧版标准格式（向后兼容）
             normalized.addProperty("companionName", data.get("ai").getAsString());
             normalized.addProperty("text", data.get("message").getAsString());
+            LOGGER.debug("Parsed standard conversation_response (old format)");
+        } else if (data.has("companionName") && data.has("text")) {
+            // 已经是标准格式
+            normalized = data;
         } else {
-            LOGGER.warn("conversation_response missing required fields");
+            LOGGER.warn("conversation_response missing required fields, received: {}", data.toString());
             return;
         }
 
         handleConversation(normalized);
+    }
+
+    /**
+     * 处理 AI 返回的动作列表。
+     *
+     * @param actions JSON 数组，包含 action 或 a 字段的动作对象
+     */
+    private void processActions(com.google.gson.JsonArray actions) {
+        if (actions == null || actions.isEmpty()) {
+            return;
+        }
+
+        for (int i = 0; i < actions.size(); i++) {
+            if (!actions.get(i).isJsonObject()) {
+                LOGGER.warn("Action at index {} is not an object", i);
+                continue;
+            }
+
+            JsonObject actionObj = actions.get(i).getAsJsonObject();
+            String type = null;
+
+            if (actionObj.has("type")) {
+                type = actionObj.get("type").getAsString();
+            } else if (actionObj.has("t")) {
+                type = actionObj.get("t").getAsString();
+            }
+
+            if (type == null) {
+                LOGGER.warn("Action at index {} missing type field", i);
+                continue;
+            }
+
+            switch (type) {
+                case "command":
+                    String command = null;
+                    if (actionObj.has("command")) {
+                        command = actionObj.get("command").getAsString();
+                    } else if (actionObj.has("c")) {
+                        command = actionObj.get("c").getAsString();
+                    }
+
+                    if (command == null || command.isBlank()) {
+                        LOGGER.warn("Command action at index {} missing 'command' text", i);
+                        continue;
+                    }
+
+                    executeServerCommand(command.trim());
+                    break;
+                default:
+                    LOGGER.warn("Unsupported action type '{}' at index {}", type, i);
+            }
+        }
+    }
+
+    /**
+     * 执行经过白名单的服务器命令。
+     *
+     * @param rawCommand 完整命令字符串（可含前导 /）
+     */
+    private void executeServerCommand(String rawCommand) {
+        if (server == null) {
+            LOGGER.warn("Server is null, cannot execute command: {}", rawCommand);
+            return;
+        }
+
+        String command = rawCommand.trim();
+        if (!command.startsWith("/")) {
+            command = "/" + command;
+        }
+
+        String[] parts = command.split("\\s+");
+        if (parts.length == 0) {
+            LOGGER.warn("Empty command received from AI actions");
+            return;
+        }
+
+        String base = parts[0].toLowerCase(java.util.Locale.ROOT);
+
+        try {
+            switch (base) {
+                case "/follow":
+                    if (parts.length < 3) {
+                        LOGGER.warn("Follow command missing arguments: {}", command);
+                        return;
+                    }
+                    handleFollowCommand(parts[1], parts[2]);
+                    break;
+                case "/stop":
+                    if (parts.length < 2) {
+                        LOGGER.warn("Stop command missing companion name: {}", command);
+                        return;
+                    }
+                    handleStopCommand(parts[1]);
+                    break;
+                case "/say":
+                    handleSayCommand(command.substring(4).trim());
+                    break;
+                case "/look":
+                    if (parts.length < 3) {
+                        LOGGER.warn("Look command missing arguments: {}", command);
+                        return;
+                    }
+                    handleLookCommand(parts[1], parts[2]);
+                    break;
+                default:
+                    LOGGER.warn("Rejected non-whitelisted command from AI: {}", command);
+            }
+        } catch (Exception e) {
+            LOGGER.error("Error executing AI command: {}", command, e);
+        }
+    }
+
+    private void handleFollowCommand(String companionName, String targetName) {
+        AIPlayerController controller = AIFakePlayerManager.getPlayerByName(companionName);
+        if (controller == null) {
+            LOGGER.warn("Companion not found for follow: {}", companionName);
+            return;
+        }
+
+        ServerPlayerEntity target = server.getPlayerManager().getPlayer(targetName);
+        if (target == null) {
+            LOGGER.warn("Follow target player not found: {}", targetName);
+            return;
+        }
+
+        controller.getMovementController().setFollowTarget(target);
+        LOGGER.info("{} now following {}", companionName, targetName);
+    }
+
+    private void handleStopCommand(String companionName) {
+        AIPlayerController controller = AIFakePlayerManager.getPlayerByName(companionName);
+        if (controller == null) {
+            LOGGER.warn("Companion not found for stop: {}", companionName);
+            return;
+        }
+
+        controller.getMovementController().stop();
+        controller.getMovementController().setFollowTarget(null);
+        controller.getViewController().stopLooking();
+        LOGGER.info("{} stopped all behaviors", companionName);
+    }
+
+    private void handleSayCommand(String message) {
+        if (message.isBlank()) {
+            LOGGER.warn("Say command missing message content");
+            return;
+        }
+        server.getPlayerManager().broadcast(Text.literal(message), false);
+        LOGGER.info("Broadcasted AI message: {}", message);
+    }
+
+    private void handleLookCommand(String companionName, String targetName) {
+        AIPlayerController controller = AIFakePlayerManager.getPlayerByName(companionName);
+        if (controller == null) {
+            LOGGER.warn("Companion not found for look: {}", companionName);
+            return;
+        }
+
+        ServerPlayerEntity target = server.getPlayerManager().getPlayer(targetName);
+        if (target == null) {
+            LOGGER.warn("Look target player not found: {}", targetName);
+            return;
+        }
+
+        controller.getViewController().setLookTarget(target);
+        LOGGER.info("{} now looking at {}", companionName, targetName);
     }
 
     /**

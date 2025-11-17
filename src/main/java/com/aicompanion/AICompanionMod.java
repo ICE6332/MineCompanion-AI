@@ -3,6 +3,7 @@ package com.aicompanion;
 import carpet.patches.EntityPlayerMPFake;
 import com.aicompanion.command.AICompanionCommand;
 import com.aicompanion.config.AICompanionConfig;
+import com.aicompanion.listener.ChatInterceptor;
 import com.aicompanion.network.ConnectionManager;
 import com.aicompanion.network.NotificationManager;
 import com.aicompanion.player.AIFakePlayerManager;
@@ -18,35 +19,35 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * MineCompanion-BOT - Main Entry Point
+ * MineCompanion-BOT - 主入口点
  *
- * Phase 2: FakePlayer-based AI companions with Carpet Mod integration
+ * 第二阶段：基于 FakePlayer 的 AI 伙伴与 Carpet Mod 集成
  *
- * This mod creates intelligent AI companions using FakePlayer entities that can:
- * - Follow players naturally
- * - Look at specific targets
- * - Move to locations
- * - Interact with the world like real players
+ * 此模组使用 FakePlayer 实体创建智能 AI 伙伴，可以：
+ * - 自然地跟随玩家
+ * - 看向特定目标
+ * - 移动到指定位置
+ * - 像真实玩家一样与世界交互
  */
 public class AICompanionMod implements ModInitializer {
 
     /**
-     * The mod ID - used for logging and registration
+     * 模组 ID - 用于日志记录和注册
      */
     public static final String MOD_ID = "aicompanion";
 
     /**
-     * Logger for console and log file output
+     * 控制台和日志文件的日志记录器
      */
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     /**
-     * Flag indicating whether Carpet Mod is loaded
+     * 表示 Carpet Mod 是否已加载的标志
      */
     private static boolean carpetModLoaded = false;
 
     /**
-     * Check if Carpet Mod is loaded and available
+     * 检查 Carpet Mod 是否已加载并可用
      */
     public static boolean isCarpetModLoaded() {
         return carpetModLoaded;
@@ -55,72 +56,74 @@ public class AICompanionMod implements ModInitializer {
     @Override
     public void onInitialize() {
         LOGGER.info("========================================");
-        LOGGER.info("MineCompanion-BOT is initializing...");
-        LOGGER.info("Version: 0.3.2-alpha.3 (Interaction + Combat + Notifications)");
+        LOGGER.info("MineCompanion-BOT 正在初始化...");
+        LOGGER.info("版本: 0.4.0-alpha.1 (LLM 对话 + 指令执行)");
         LOGGER.info("========================================");
 
-        // Check if Carpet Mod is loaded
+        // 检查 Carpet Mod 是否已加载
         carpetModLoaded = FabricLoader.getInstance().isModLoaded("carpet");
 
         if (carpetModLoaded) {
-            LOGGER.info("✓ Carpet Mod detected - FakePlayer API available");
+            LOGGER.info("✓ 检测到 Carpet Mod - FakePlayer API 可用");
         } else {
-            LOGGER.error("✗ Carpet Mod NOT found!");
-            LOGGER.error("  This mod requires Carpet Mod to function.");
-            LOGGER.error("  Please install Carpet Mod from: https://github.com/gnembon/fabric-carpet/releases");
-            LOGGER.error("  Without Carpet Mod, AI companions cannot be created.");
+            LOGGER.error("✗ 未找到 Carpet Mod!");
+            LOGGER.error("  此模组需要 Carpet Mod 才能工作。");
+            LOGGER.error("  请从以下地址安装 Carpet Mod：https://github.com/gnembon/fabric-carpet/releases");
+            LOGGER.error("  没有 Carpet Mod，无法创建 AI 伙伴。");
         }
 
-        // Load configuration
+        // 加载配置
         AICompanionConfig.getInstance().load(FabricLoader.getInstance().getConfigDir().toFile());
-        LOGGER.info("Configuration loaded");
+        LOGGER.info("配置已加载");
 
-        // Register server started event
+        // 注册服务器启动事件
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
-            LOGGER.info("Server started - initializing AI systems...");
+            LOGGER.info("服务器已启动 - 正在初始化 AI 系统...");
 
-            // Initialize WebSocket connection manager
+            // 初始化 WebSocket 连接管理器
             ConnectionManager.getInstance().initialize(server);
+            // 注册聊天拦截器（依赖已初始化的连接）
+            ChatInterceptor.register();
 
-            // Initialize game state collector
+            // 初始化游戏状态收集器
             GameStateCollector.getInstance().initialize(server);
 
-            LOGGER.info("AI systems initialized");
+            LOGGER.info("AI 系统已初始化");
         });
 
-        // Register server tick event for AI updates
+        // 注册服务器 tick 事件以更新 AI
         ServerTickEvents.END_SERVER_TICK.register(server -> {
-            // Update all AI companions every tick
+            // 每个 tick 更新所有 AI 伙伴
             server.getWorlds().forEach(AIFakePlayerManager::tick);
         });
-        LOGGER.info("Registered AI update tick handler");
+        LOGGER.info("已注册 AI 更新 tick 处理器");
 
-        // Register world tick event for state collection
+        // 注册世界 tick 事件以进行状态收集
         ServerTickEvents.END_WORLD_TICK.register(world -> {
-            // Only collect state for the overworld to avoid duplicates
+            // 仅对主世界收集状态以避免重复
             if (world.getRegistryKey() == World.OVERWORLD) {
                 GameStateCollector.getInstance().tick();
             }
         });
-        LOGGER.info("Registered state collection tick handler");
+        LOGGER.info("已注册状态收集 tick 处理器");
 
-        // Register player join event to detect FakePlayer login
+        // 注册玩家加入事件以检测 FakePlayer 登录
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
-            // Check if the joined player is a FakePlayer
+            // 检查加入的玩家是否是 FakePlayer
             if (handler.player instanceof EntityPlayerMPFake) {
                 EntityPlayerMPFake fakePlayer = (EntityPlayerMPFake) handler.player;
                 String playerName = fakePlayer.getName().getString();
 
                 LOGGER.info(
-                    "FakePlayer '{}' joined the server, attempting registration...",
+                    "FakePlayer '{}' 加入了服务器，尝试注册...",
                     playerName
                 );
 
-                // Try to register this FakePlayer if it's pending
+                // 尝试注册此 FakePlayer（如果它处于待注册状态）
                 AIFakePlayerManager.tryRegisterFromJoin(fakePlayer, server);
             }
 
-            // Flush any pending notifications (e.g., connection success when no player online)
+            // 刷新任何待发送的通知（例如，当没有玩家在线时的连接成功通知）
             NotificationManager.getInstance().flushPendingMessages();
 
             // 如果此时已经连接上后端，但之前玩家不在线导致未提示，则在玩家加入时补发
@@ -128,38 +131,38 @@ public class AICompanionMod implements ModInitializer {
                 NotificationManager.getInstance().sendConnectionSuccess();
             }
         });
-        LOGGER.info("Registered FakePlayer join event handler");
+        LOGGER.info("已注册 FakePlayer 加入事件处理器");
 
-        // Register server stopping event for cleanup
+        // 注册服务器停止事件以进行清理
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
-            LOGGER.info("Server stopping - cleaning up AI systems...");
+            LOGGER.info("服务器正在停止 - 清理 AI 系统...");
 
-            // Disconnect WebSocket
+            // 断开 WebSocket
             ConnectionManager.getInstance().disconnect();
 
-            // Cleanup notifications
+            // 清理通知
             NotificationManager.getInstance().cleanup();
 
-            // Cleanup AI players
+            // 清理 AI 玩家
             AIFakePlayerManager.cleanup();
 
-            LOGGER.info("AI systems cleaned up");
+            LOGGER.info("AI 系统已清理");
         });
 
-        // Register commands
+        // 注册命令
         CommandRegistrationCallback.EVENT.register(
             (dispatcher, registryAccess, environment) -> {
                 AICompanionCommand.register(dispatcher, registryAccess);
             }
         );
-        LOGGER.info("Registered mod commands");
+        LOGGER.info("已注册模组命令");
 
         LOGGER.info("========================================");
-        LOGGER.info("MineCompanion-BOT initialized successfully!");
-        LOGGER.info("Features:");
-        LOGGER.info("  - FakePlayer AI companions");
-        LOGGER.info("  - WebSocket communication: " + (AICompanionConfig.getInstance().isWebSocketEnabled() ? "ENABLED" : "DISABLED"));
-        LOGGER.info("  - State collection: " + (AICompanionConfig.getInstance().isWebSocketEnabled() ? "ENABLED" : "DISABLED"));
+        LOGGER.info("MineCompanion-BOT 初始化成功！");
+        LOGGER.info("功能:");
+        LOGGER.info("  - FakePlayer AI 伙伴");
+        LOGGER.info("  - WebSocket 通信: " + (AICompanionConfig.getInstance().isWebSocketEnabled() ? "已启用" : "已禁用"));
+        LOGGER.info("  - 状态收集: " + (AICompanionConfig.getInstance().isWebSocketEnabled() ? "已启用" : "已禁用"));
         LOGGER.info("========================================");
     }
 }
