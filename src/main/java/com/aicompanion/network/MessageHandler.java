@@ -5,6 +5,7 @@ import com.aicompanion.player.AIFakePlayerManager;
 import com.aicompanion.player.AIPlayerController;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -462,26 +463,87 @@ public class MessageHandler {
      * 处理对话消息
      */
     private void handleConversation(JsonObject data) {
-        if (!data.has("companionName") || !data.has("text")) {
-            LOGGER.warn("conversation_message missing required fields");
+        if (!data.has("text")) {
+            LOGGER.warn("conversation_message missing 'text' field");
             return;
         }
 
-        String companionName = data.get("companionName").getAsString();
+        boolean hasCompanionField = data.has("companionName");
+        String companionName = hasCompanionField
+            ? data.get("companionName").getAsString()
+            : "AICompanion";
         String text = data.get("text").getAsString();
 
-        // 即便对应的 AI 未注册，也允许发送聊天，便于联调
         if (server == null) {
-            LOGGER.warn("Server is null, cannot broadcast conversation.");
+            LOGGER.warn(
+                "Server is null, cannot deliver conversation for {}.",
+                companionName
+            );
             return;
         }
 
-        server.getPlayerManager().broadcast(
-            Text.literal("<" + companionName + "> " + text),
-            false
-        );
+        boolean sentViaCommand = false;
+        String fallbackReason = hasCompanionField
+            ? "companion not found"
+            : "companion field missing";
 
-        LOGGER.info("{} says: {}", companionName, text);
+        if (!hasCompanionField) {
+            LOGGER.warn(
+                "conversation_message missing 'companionName', defaulting to broadcast"
+            );
+        } else {
+            AIPlayerController controller = AIFakePlayerManager.getPlayerByName(
+                companionName
+            );
+
+            if (controller != null) {
+                fallbackReason = "command execution failed";
+                try {
+                    server
+                        .getCommandManager()
+                        .getDispatcher()
+                        .execute(
+                            "say " + text,
+                            controller.getFakePlayer().getCommandSource()
+                        );
+                    sentViaCommand = true;
+                    LOGGER.info(
+                        "AI chat sent via fake player command [{}]: {}",
+                        companionName,
+                        text
+                    );
+                } catch (CommandSyntaxException e) {
+                    fallbackReason = "command syntax error";
+                    LOGGER.warn(
+                        "Failed to execute chat command for {}: {}",
+                        companionName,
+                        e.getMessage()
+                    );
+                } catch (Exception e) {
+                    fallbackReason = "unexpected command error";
+                    LOGGER.warn(
+                        "Unexpected error executing chat command for {}",
+                        companionName,
+                        e
+                    );
+                }
+            } else {
+                LOGGER.warn("Companion not found for conversation: {}", companionName);
+            }
+        }
+
+        if (!sentViaCommand) {
+            server.getPlayerManager().broadcast(
+                Text.literal("<" + companionName + "> " + text),
+                false
+            );
+            LOGGER.info(
+                "AI chat broadcast via server fallback [{}] (reason: {}): {}",
+                companionName,
+                fallbackReason,
+                text
+            );
+        }
     }
 
     /**

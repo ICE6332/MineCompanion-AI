@@ -1,7 +1,9 @@
 package com.aicompanion.listener;
 
+import carpet.patches.EntityPlayerMPFake;
 import com.aicompanion.network.AIWebSocketClient;
 import com.aicompanion.network.ConnectionManager;
+import com.aicompanion.player.AIFakePlayerManager;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -13,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
+import java.util.Collection;
 
 /**
  * ChatInterceptor 拦截玩家聊天消息并转发给后端 LLM 服务。
@@ -49,6 +52,12 @@ public final class ChatInterceptor {
         ServerPlayerEntity sender,
         MessageType.Parameters params
     ) {
+        // 排除 FakePlayer 的消息，避免 AI 回复被重复拦截
+        if (sender instanceof EntityPlayerMPFake) {
+            LOGGER.debug("Ignoring message from FakePlayer: {}", sender.getName().getString());
+            return true; // 继续广播，不发送到后端
+        }
+
         String content = message.getContent().getString();
 
         // 命令直接放行
@@ -64,10 +73,25 @@ public final class ChatInterceptor {
             return true;
         }
 
+        // 动态获取当前活跃的 AI 名称（支持单 AI）
+        Collection<String> aiNames = AIFakePlayerManager.getAllPlayerNames();
+        String companionName;
+
+        if (aiNames.isEmpty()) {
+            // 没有活跃的 AI，使用默认名称作为回退
+            companionName = "AICompanion";
+            LOGGER.debug("No active AI companions found, using default name: {}", companionName);
+        } else {
+            // 取第一个 AI（当前仅支持单 AI）
+            companionName = aiNames.iterator().next();
+            LOGGER.debug("Using active AI companion: {}", companionName);
+        }
+
         JsonObject payload = new JsonObject();
         payload.addProperty("type", "conversation_request");
         payload.addProperty("playerName", sender.getName().getString());
         payload.addProperty("message", content);
+        payload.addProperty("companionName", companionName); // 动态获取的 AI 名称
 
         JsonArray position = new JsonArray();
         position.add(sender.getX());
