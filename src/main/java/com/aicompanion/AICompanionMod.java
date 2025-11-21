@@ -4,6 +4,7 @@ import carpet.patches.EntityPlayerMPFake;
 import com.aicompanion.command.AICompanionCommand;
 import com.aicompanion.config.AICompanionConfig;
 import com.aicompanion.listener.ChatInterceptor;
+import com.aicompanion.listener.PlayerLifecycleListener;
 import com.aicompanion.network.ConnectionManager;
 import com.aicompanion.network.NotificationManager;
 import com.aicompanion.player.AIFakePlayerManager;
@@ -84,6 +85,8 @@ public class AICompanionMod implements ModInitializer {
             ConnectionManager.getInstance().initialize(server);
             // 注册聊天拦截器（依赖已初始化的连接）
             ChatInterceptor.register();
+            // 注册玩家生命周期事件监听，通知后端玩家上下线
+            PlayerLifecycleListener.register();
 
             // 初始化游戏状态收集器
             GameStateCollector.getInstance().initialize(server);
