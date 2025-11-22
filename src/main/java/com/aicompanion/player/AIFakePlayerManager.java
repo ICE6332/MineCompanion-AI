@@ -3,6 +3,7 @@ package com.aicompanion.player;
 import carpet.patches.EntityPlayerMPFake;
 import com.aicompanion.AICompanionMod;
 import java.util.Collection;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -74,14 +75,13 @@ public class AIFakePlayerManager {
         }
 
         // 1. 检查名称是否已被现有 AI 使用（忽略大小写）
-        for (String existingName : NAME_TO_UUID.keySet()) {
-            if (existingName.equalsIgnoreCase(name)) {
-                owner.sendMessage(
-                    Text.literal("§c已存在名为 '" + existingName + "' 的 AI 伙伴！"),
-                    false
-                );
-                return false;
-            }
+        String normalizedName = normalizeName(name);
+        if (NAME_TO_UUID.containsKey(normalizedName)) {
+            owner.sendMessage(
+                Text.literal("§c已存在名为 '" + name + "' 的 AI 伙伴！"),
+                false
+            );
+            return false;
         }
 
         // 2. 检查是否正在等待注册（忽略大小写）
@@ -176,7 +176,7 @@ public class AIFakePlayerManager {
 
         // 7. 添加到待注册列表，等待 FakePlayer 登录事件
         // 使用小写作为 key 以支持忽略大小写匹配
-        PENDING_REGISTRATION.put(name.toLowerCase(), owner.getUuid());
+        PENDING_REGISTRATION.put(normalizedName, owner.getUuid());
 
         AICompanionMod.LOGGER.info(
             "FakePlayer '{}' creation initiated, waiting for join event...",
@@ -198,7 +198,7 @@ public class AIFakePlayerManager {
      * @return 成功移除返回 true，否则返回 false
      */
     public static boolean removeAIPlayer(String name) {
-        UUID uuid = NAME_TO_UUID.remove(name);
+        UUID uuid = NAME_TO_UUID.remove(normalizeName(name));
         if (uuid == null) {
             return false;
         }
@@ -280,7 +280,7 @@ public class AIFakePlayerManager {
      * @return AIPlayerController 实例，不存在返回 null
      */
     public static AIPlayerController getPlayerByName(String name) {
-        UUID uuid = NAME_TO_UUID.get(name);
+        UUID uuid = NAME_TO_UUID.get(normalizeName(name));
         if (uuid == null) {
             return null;
         }
@@ -303,7 +303,10 @@ public class AIFakePlayerManager {
      * @return AI 名称集合
      */
     public static Collection<String> getAllPlayerNames() {
-        return NAME_TO_UUID.keySet();
+        // 返回实际显示名称，避免暴露内部规范化形式
+        return PLAYERS.values().stream()
+            .map(AIPlayerController::getName)
+            .toList();
     }
 
     /**
@@ -363,5 +366,12 @@ public class AIFakePlayerManager {
             owner.getY(),
             owner.getZ() + offsetZ
         );
+    }
+
+    /**
+     * 规范化名称以实现大小写不敏感的映射。
+     */
+    private static String normalizeName(String name) {
+        return name.toLowerCase(Locale.ROOT);
     }
 }

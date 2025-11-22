@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -24,6 +25,7 @@ public class AIWebSocketClient extends WebSocketClient {
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private final AtomicInteger reconnectAttempts = new AtomicInteger(0);
     private volatile boolean shouldReconnect = true;
+    private volatile ScheduledFuture<?> pendingReconnect;
 
     public AIWebSocketClient(URI serverUri, ConnectionManager connectionManager, MessageHandler messageHandler) {
         super(serverUri);
@@ -35,6 +37,12 @@ public class AIWebSocketClient extends WebSocketClient {
     public void onOpen(ServerHandshake handshake) {
         LOGGER.info("WebSocket connected to: " + getURI());
         reconnectAttempts.set(0);
+
+        // 成功连接后取消任何挂起的重连任务
+        if (pendingReconnect != null) {
+            pendingReconnect.cancel(false);
+            pendingReconnect = null;
+        }
 
         // 游戏内提示连接成功（即便后端还会再回 connection_ack，也提前告知玩家）
         NotificationManager.getInstance().sendConnectionSuccess();
@@ -111,8 +119,18 @@ public class AIWebSocketClient extends WebSocketClient {
 
         LOGGER.info("Scheduling reconnect in {} seconds (attempt {}/{})", delay, attempt, maxAttempts);
 
-        scheduler.schedule(() -> {
+        // 如果已有任务排队，避免重复安排
+        if (pendingReconnect != null && !pendingReconnect.isDone()) {
+            LOGGER.debug("Reconnect already scheduled, skipping duplicate");
+            return;
+        }
+
+        pendingReconnect = scheduler.schedule(() -> {
             try {
+                if (!shouldReconnect || this.isOpen()) {
+                    return;
+                }
+
                 LOGGER.info("Attempting to reconnect...");
                 this.reconnectBlocking();
             } catch (InterruptedException e) {
@@ -127,6 +145,10 @@ public class AIWebSocketClient extends WebSocketClient {
      */
     public void shutdown() {
         shouldReconnect = false;
+        if (pendingReconnect != null) {
+            pendingReconnect.cancel(false);
+            pendingReconnect = null;
+        }
         scheduler.shutdown();
         close();
     }
