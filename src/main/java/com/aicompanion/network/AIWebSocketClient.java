@@ -102,6 +102,12 @@ public class AIWebSocketClient extends WebSocketClient {
      * 安排重连
      */
     private void scheduleReconnect() {
+        // 如果已有任务排队，避免重复安排且不消耗重连次数
+        if (pendingReconnect != null && !pendingReconnect.isDone()) {
+            LOGGER.debug("Reconnect already scheduled, skipping duplicate");
+            return;
+        }
+
         int attempt = reconnectAttempts.incrementAndGet();
         int maxAttempts = AICompanionConfig.getInstance().getMaxReconnectAttempts();
 

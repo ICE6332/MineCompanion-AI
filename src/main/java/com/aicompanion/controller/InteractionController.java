@@ -56,7 +56,12 @@ public class InteractionController {
         }
 
         ItemStack stack = player.getMainHandStack();
-        if (stack.isEmpty()) {
+        if (stack.isEmpty() || !(stack.getItem() instanceof BlockItem)) {
+            return;
+        }
+
+        BlockState current = world.getBlockState(pos);
+        if (!current.isAir()) {
             return;
         }
 
@@ -120,4 +125,3 @@ public class InteractionController {
         // No per-tick interaction logic yet.
     }
 }
-

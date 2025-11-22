@@ -221,7 +221,7 @@ public class AIFakePlayerManager {
      */
     public static void tryRegisterFromJoin(EntityPlayerMPFake fakePlayer, net.minecraft.server.MinecraftServer server) {
         String actualName = fakePlayer.getName().getString();
-        String lowerCaseName = actualName.toLowerCase();
+        String normalizedName = normalizeName(actualName);
 
         AICompanionMod.LOGGER.info(
             "Attempting to register FakePlayer '{}' from join event",
@@ -229,7 +229,7 @@ public class AIFakePlayerManager {
         );
 
         // 检查是否在待注册列表中（忽略大小写）
-        UUID creatorUUID = PENDING_REGISTRATION.remove(lowerCaseName);
+        UUID creatorUUID = PENDING_REGISTRATION.remove(normalizedName);
 
         if (creatorUUID == null) {
             AICompanionMod.LOGGER.warn(
@@ -241,7 +241,7 @@ public class AIFakePlayerManager {
         }
 
         // 检查是否已经注册过（防止重复注册）
-        if (NAME_TO_UUID.containsKey(actualName)) {
+        if (NAME_TO_UUID.containsKey(normalizedName)) {
             AICompanionMod.LOGGER.warn(
                 "FakePlayer '{}' is already registered, skipping",
                 actualName
@@ -252,7 +252,7 @@ public class AIFakePlayerManager {
         // 创建控制器并注册
         AIPlayerController controller = new AIPlayerController(fakePlayer);
         PLAYERS.put(fakePlayer.getUuid(), controller);
-        NAME_TO_UUID.put(actualName, fakePlayer.getUuid());
+        NAME_TO_UUID.put(normalizedName, fakePlayer.getUuid());
 
         AICompanionMod.LOGGER.info(
             "Successfully registered AI companion '{}' (UUID: {})",
