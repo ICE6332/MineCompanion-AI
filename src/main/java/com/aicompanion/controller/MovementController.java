@@ -3,6 +3,8 @@ package com.aicompanion.controller;
 import carpet.patches.EntityPlayerMPFake;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 
 /**
@@ -24,6 +26,14 @@ public class MovementController {
     private static final double DEFAULT_SPEED = 0.2;
 
     private static final int PATH_UPDATE_INTERVAL = 5;
+
+    /**
+     * 自动跳跃相关参数
+     */
+    private static final double AUTO_JUMP_CHECK_DISTANCE = 0.7;
+    private static final double AUTO_JUMP_CLEARANCE_HEIGHT = 1.0;
+    private static final int AUTO_JUMP_COOLDOWN_TICKS = 4;
+    private int lastAutoJumpTick = -AUTO_JUMP_COOLDOWN_TICKS;
 
     /**
      * 跟随目标玩家
@@ -71,6 +81,8 @@ public class MovementController {
 
         // 归一化方向向量
         direction = direction.normalize();
+
+        tryAutoJump(direction);
 
         // 只在水平方向移动，保持 Y 轴速度（重力）
         double dx = direction.x * speed;
@@ -195,8 +207,48 @@ public class MovementController {
     private void applyCachedMovement() {
         double dx = cachedDirection.x * DEFAULT_SPEED;
         double dz = cachedDirection.z * DEFAULT_SPEED;
+        tryAutoJump(cachedDirection);
         player.setVelocity(dx, player.getVelocity().y, dz);
         updateYawTowards(new Vec3d(player.getX(), player.getY(), player.getZ()).add(cachedDirection));
+    }
+
+    /**
+     * 遇到正前方 1 格高方块时尝试跳跃
+     */
+    private void tryAutoJump(Vec3d moveDir) {
+        if (moveDir == null || moveDir.lengthSquared() < 0.0001) {
+            return;
+        }
+        if (!player.isOnGround()) {
+            return;
+        }
+
+        // 冷却，避免连续起跳
+        if (player.age - lastAutoJumpTick < AUTO_JUMP_COOLDOWN_TICKS) {
+            return;
+        }
+
+        Vec3d direction = moveDir.normalize();
+        Vec3d forwardOffset = new Vec3d(
+            direction.x * AUTO_JUMP_CHECK_DISTANCE,
+            0,
+            direction.z * AUTO_JUMP_CHECK_DISTANCE
+        );
+
+        ServerWorld world = (ServerWorld) player.getEntityWorld();
+        Box baseBox = player.getBoundingBox();
+        Box forwardBox = baseBox.offset(forwardOffset);
+
+        // 前方被挡且上方一格有空间，则起跳
+        boolean blockedAhead = !world.isSpaceEmpty(player, forwardBox);
+        if (blockedAhead) {
+            Box upperBox = forwardBox.offset(0, AUTO_JUMP_CLEARANCE_HEIGHT, 0);
+            boolean spaceAbove = world.isSpaceEmpty(player, upperBox);
+            if (spaceAbove) {
+                player.jump();
+                lastAutoJumpTick = player.age;
+            }
+        }
     }
 
     /**
